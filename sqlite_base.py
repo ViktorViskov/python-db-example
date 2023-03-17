@@ -1,5 +1,7 @@
 import sqlite3
 from os.path import exists
+from typing import Union
+
 
 # file where will be saved db
 _DB_FILE_NAME = "Some.db"
@@ -16,25 +18,26 @@ _CREATE_SQL_SCRIPT = '''
 
 # class for represent base model for sqlite3 connection
 class SQLiteBase:
-    connection: sqlite3.Connection
-
-    # service methods
     def __init__(self) -> None:
         if not exists(_DB_FILE_NAME):
             self._init_db()
+    
+    def connection(self, func: callable) -> Union[list, None]:
+        def wrapper(*args, **kwargs):
+            connection = sqlite3.connect(_DB_FILE_NAME)
 
-    def open_connection(self) -> None:
-        self.connection = sqlite3.connect(_DB_FILE_NAME)
+            result = func(*args, **kwargs, con=connection)
 
-    def close_connection(self) -> None:
-        self.connection.close()
+            connection.close()
+            return result
+        return wrapper
 
     # run only when file is not found in fs. This run sql script for create tables in db
     def _init_db(self) -> None:
-        self.open_connection()
+        connection = sqlite3.connect(_DB_FILE_NAME)
 
         sql_script = _CREATE_SQL_SCRIPT
-        self.connection.executescript(sql_script)
-        self.connection.commit()
+        connection.executescript(sql_script)
+        connection.commit()
 
-        self.close_connection()
+        connection.close()
