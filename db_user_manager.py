@@ -1,53 +1,10 @@
-import sqlite3
 from typing import Union
-from os.path import exists
-from dataclasses import dataclass
+
+from data_models import User
+from sqlite_base import SQLiteBase
 
 
-# installing script
-CREATE_SQL_SCRIPT = '''
-    CREATE TABLE users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name VARCHAR(255) NOT NULL,
-        surname VARCHAR(255) NOT NULL,
-        email VARCHAR(255) NOT NULL
-    );
-'''
-
-# model for user object
-@dataclass
-class User:
-    id:int
-    name:str
-    surname:str
-    email:str
-
-class SQLiteContext:
-    _file_name: str = "Some.db"
-    connection: sqlite3.Connection
-
-    # service methods
-    def __init__(self) -> None:
-        if not exists(self._file_name):
-            self._init_db()
-
-    def open_connection(self) -> None:
-        self.connection = sqlite3.connect(self._file_name)
-
-    def close_connection(self) -> None:
-        self.connection.close()
-
-    def _init_db(self) -> None:
-        self.open_connection()
-
-        sql_script = CREATE_SQL_SCRIPT
-        self.connection.executescript(sql_script)
-        self.connection.commit()
-
-        self.close_connection()
-
-
-class UserManager(SQLiteContext):
+class DbUserManager(SQLiteBase):
     # options
     table_name = "users"
 
