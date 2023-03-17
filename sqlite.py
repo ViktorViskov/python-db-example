@@ -23,13 +23,11 @@ class User:
     email:str
 
 class SQLiteContext:
-    _file_name: str
+    _file_name: str = "Some.db"
     connection: sqlite3.Connection
 
     # service methods
-    def __init__(self, db_file_name) -> None:
-        self._file_name = db_file_name
-
+    def __init__(self) -> None:
         if not exists(self._file_name):
             self._init_db()
 
@@ -51,11 +49,10 @@ class SQLiteContext:
 
 class UserManager(SQLiteContext):
     # options
-    db_file_name = "Some.db"
     table_name = "users"
 
     def __init__(self) -> None:
-        super().__init__(self.db_file_name)
+        super().__init__()
 
     # method for parsing user from db out data
     def _parse_user(self, db_out:list) -> Union[User, None]:
