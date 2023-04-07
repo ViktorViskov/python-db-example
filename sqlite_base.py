@@ -2,18 +2,13 @@ import sqlite3
 from sqlite3 import Connection
 from os.path import exists
 
+
 # file where will be saved db
-_DB_FILE_NAME = "Some.db"
+_DB_FILE_NAME = "sqlite.db"
 
 # SQL installing script
-_CREATE_SQL_SCRIPT = '''
-    CREATE TABLE users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name VARCHAR(255) NOT NULL,
-        surname VARCHAR(255) NOT NULL,
-        email VARCHAR(255) NOT NULL
-    );
-'''
+with open("install_sqlite.sql", "r") as file:
+    _CREATE_SQL_SCRIPT = file.read()
 
 # class for represent base model for sqlite3 connection
 class SQLiteBase:

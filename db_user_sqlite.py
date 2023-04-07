@@ -1,10 +1,10 @@
 from typing import Union
 
 from data_models import User
-from mysql_base import MySQLBase
+from sqlite_base import SQLiteBase
 
 
-class DbUserManager(MySQLBase):
+class DbUser(SQLiteBase):
     # options
     table_name = "users"
 
@@ -24,7 +24,6 @@ class DbUserManager(MySQLBase):
     
     def add_user(self, u: User) -> None:
         connection = self.open_connection()
-        cursor = connection.cursor()
 
         sql_querry = f'''
         INSERT INTO {self.table_name} (
@@ -33,17 +32,16 @@ class DbUserManager(MySQLBase):
             email
         )
         VALUES (
-            %s,
-            %s,
-            %s
+            ?,
+            ?,
+            ?
         )
         '''
 
-        cursor.execute(
+        connection.execute(
             sql_querry, (u.name, u.surname, u.email,))
+        
         connection.commit()
-
-        cursor.close()
         connection.close()
 
     def get_all_users(self) -> list[User]:
@@ -53,7 +51,6 @@ class DbUserManager(MySQLBase):
         cursor.execute(f"SELECT id, name, surname, email FROM {self.table_name}")
         rows = cursor.fetchall()
         
-        cursor.close()
         connection.close()
         return [self._parse_user(item) for item in rows]
     
@@ -61,7 +58,7 @@ class DbUserManager(MySQLBase):
         connection = self.open_connection()
         cursor = connection.cursor()
 
-        cursor.execute(f"SELECT id, name, surname, email FROM {self.table_name} WHERE id = %s", (id,))
+        cursor.execute(f"SELECT id, name, surname, email FROM {self.table_name} WHERE id = ?", (id,))
         out = cursor.fetchone()
 
         connection.close()
@@ -69,30 +66,26 @@ class DbUserManager(MySQLBase):
     
     def update_user(self, u: User) -> None:
         connection = self.open_connection()
-        cursor = connection.cursor()
 
         sql_querry = f'''
         UPDATE {self.table_name} 
-        SET name = %s, surname = %s, email = %s
-        WHERE id = %s;
+        SET name = ?, surname = ?, email = ?
+        WHERE id = ?;
         '''
-        cursor.execute(
+        connection.execute(
             sql_querry, (u.name, u.surname, u.email, u.id,))
-        connection.commit()
         
-        cursor.close()
+        connection.commit()
         connection.close()
 
     def delete_user(self, u: User) -> None:
         connection = self.open_connection()
-        cursor = connection.cursor()
 
         sql_script = f'''
-        DELETE FROM {self.table_name} WHERE id = %s;
+        DELETE FROM {self.table_name} WHERE id = ?;
         '''
-        cursor.execute(sql_script, (u.id,))
-        connection.commit()
+        connection.execute(sql_script, (u.id,))
 
-        cursor.close()
+        connection.commit()
         connection.close()
 
